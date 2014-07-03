@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html>
+    <head>
+		<meta name="viewport" content="width=device-width, user-scalable=no">
+		<title>Resizer Test</title>
+    </head>
+    <body>
+
+        <% for(var i = 0; i < images.length; i++) { %>
+        <div>
+            <h1>Original</h1>
+            <img src="/images/<%= images[i] %>" />
+        </div>
+        <% } %>
+
+
+    </body>
+	<footer>
+		<!-- Live reload from anywhere -->
+		<script>
+			if (window.location.hostname == "localhost" || window.location.hostname.split(".").length == 4) {
+				var e = document.createElement("script");
+				e.setAttribute("src", "http://" + window.location.hostname + ":35729/livereload.js");
+				document.body.appendChild(e);
+			}
+		</script>
+	</footer>
+</html>

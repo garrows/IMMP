@@ -9,7 +9,7 @@ var app = express();
 
 // view engine setup
 app.set('views', path.join(__dirname, 'views'));
-app.set('view engine', 'jade');
+app.set('view engine', 'ejs');
 
 app.use(favicon());
 app.use(logger('dev'));
@@ -17,6 +17,16 @@ app.use(bodyParser.json());
 app.use(bodyParser.urlencoded());
 app.use(cookieParser());
 app.use(express.static(path.join(__dirname, 'public')));
+
+app.get('/',  function(req, res) {
+    var template = {
+        images: [
+            "monster.png",
+            "wat.jpg"
+        ]
+    };
+	res.render(__dirname + '/public/index.ejs', template);
+});
 
 app.use('/im/*', require('./src')({
     ttl: 0
