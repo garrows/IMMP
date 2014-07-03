@@ -3,13 +3,24 @@
     <head>
 		<meta name="viewport" content="width=device-width, user-scalable=no">
 		<title>Resizer Test</title>
+        <style>
+            body>div>div{
+                display:inline-block;
+            }
+        </style>
     </head>
     <body>
 
         <% for(var i = 0; i < images.length; i++) { %>
         <div>
-            <h1>Original</h1>
-            <img src="/images/<%= images[i] %>" />
+            <div class="test">
+                <h3>Original</h3>
+                <img src="<%= images[i] %>" />
+            </div>
+            <div class="test">
+                <h3>Resized 500x100</h3>
+                <img src="/im/?img=<%= images[i] %>&resize=500x100" />
+            </div>
         </div>
         <% } %>
 

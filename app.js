@@ -21,8 +21,8 @@ app.use(express.static(path.join(__dirname, 'public')));
 app.get('/',  function(req, res) {
     var template = {
         images: [
-            "monster.png",
-            "wat.jpg"
+            "/images/monster.png",
+            "/images/wat.jpg"
         ]
     };
 	res.render(__dirname + '/public/index.ejs', template);

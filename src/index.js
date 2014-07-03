@@ -3,6 +3,7 @@ var _ = require('underscore'),
 	cast = require('sc-cast'),
 	crypto = require('crypto'),
 	fs = require('fs'),
+	os = require('os'),
 	gm = require('gm'),
 	http = require('http'),
 	request = require('request');
@@ -10,7 +11,7 @@ var _ = require('underscore'),
 module.exports = function(_config) {
 	var config = _.extend({
 
-		cacheFolder: process.cwd() + '/.tmp',
+		cacheFolder: os.tmpdir(),
 		ttl: 1000 * 60 * 60 * 24 * 7 // 1 week
 
 	}, _config);
@@ -23,7 +24,7 @@ module.exports = function(_config) {
 		};
 
 		var image = {
-			location: _req.params['0'],
+			location: _req.query.img,
 			resize: {
 				width: cast(_.first(dimensions.match(/^[^x]+/)), 'number') || null,
 				height: cast(_.first(dimensions.match(/[^x]+$/)), 'number') || null
@@ -66,6 +67,7 @@ module.exports = function(_config) {
 						.stream()
 						.pipe(_res);
 				} else {
+					//No cache
 					_callback();
 				}
 
@@ -103,11 +105,14 @@ module.exports = function(_config) {
 
 					// If a width or height has been sepcified
 					if (!(!image.resize.width && !image.resize.height)) {
+						console.log("Resizing", image.resize);
 						gmImage.resize(image.resize.width, image.resize.height);
 					}
 
 					gmImage.stream(function(_error, _stdout, _stderr) {
-						if (_error || _stderr) return _callback(_error || _stderr);
+						if (_error) {
+							return _callback(_error);
+						}
 
 						var writeStream = fs.createWriteStream(config.cacheFolder + '/' + image.hash);
 
