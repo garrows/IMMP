@@ -13,14 +13,14 @@
 
         <% for(var i = 0; i < images.length; i++) { %>
         <div>
-            <div class="test">
-                <h3>Original</h3>
-                <img src="<%= images[i] %>" />
-            </div>
-            <div class="test">
-                <h3>Resized 500x100</h3>
-                <img src="/im/?img=<%= images[i] %>&resize=500x100" />
-            </div>
+            <% for(var j = 0; j < tests.length; j++) { %>
+                <div class="test">
+                    <h3><%= tests[j] %></h3>
+                    <a href="/im/?img=<%= images[i] %>&<%= tests[j] %>">
+                        <img src="/im/?img=<%= images[i] %>&<%= tests[j] %>" />
+                    </a>
+                </div>
+            <% } %>
         </div>
         <% } %>
 

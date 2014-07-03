@@ -18,6 +18,7 @@ module.exports = function(_config) {
 
 	return function(_req, _res, _next) {
 		var dimensions = _req.query.resize || '0x0';
+		var crop = _req.query.crop || '0x0';
 
 		var gmOptions = {
 			imageMagick: true
@@ -30,10 +31,12 @@ module.exports = function(_config) {
 				height: cast(_.first(dimensions.match(/[^x]+$/)), 'number') || null
 			},
 			crop: {
-				width: 1,
-				height: 1,
-				x: 0,
-				y: 0
+				width: cast(_.first(crop.match(/^[^x]+/)), 'number') || null,
+				height: cast(_.first(crop.match(/[^x]+$/)), 'number') || null
+			},
+			size: {
+				width: 0,
+				height: 0
 			}
 		};
 
@@ -88,30 +91,70 @@ module.exports = function(_config) {
 			/**
 			 * Perform image resize/crop operations
 			 */
-			function(_image, _callback) {
-				var gmImage = gm(_image, image.hash).options(gmOptions);
+			function(_imageStream, _manipulationDoneCallback) {
+				var gmImage = gm(_imageStream, image.hash).options(gmOptions);
 
-			// gmImage.size(function(_error, _size) {
-			// 	if (_error) return _callback(_error);
+				async.waterfall([
+					//Get original size
+					function(_callback) {
+						gmImage.size({bufferStream: true}, function(_error, _size) {
+							if (_error) {
+								return _callback(_error);
+							}
+							image.size = _size;
 
-			// 	// If a crop ratio has been defined
-			// 	if (_size.width / _size.height > image.crop.width / image.crop.height) {
-			// 		console.log(1);
-			// 	} else {
-			// 		console.log(2);
-			// 	}
+							_callback(null);
+						});
+					},
 
-					// gmImage.crop(100, 100);
+					// Crop
+					function(_callback) {
+						// If a crop ratio has been specified
+						if (!(!image.crop.width && !image.crop.height)) {
 
-					// If a width or height has been sepcified
-					if (!(!image.resize.width && !image.resize.height)) {
-						console.log("Resizing", image.resize);
-						gmImage.resize(image.resize.width, image.resize.height);
-					}
+							var newSize = {
+								width: image.size.width,
+								height: image.size.height
+							};
+							var offset = { x: 0, y: 0};
 
+							if (image.size.height < image.size.width) {
+								newSize.height = image.size.width / (image.crop.width / image.crop.height);
+								offset.y = (image.size.height - newSize.height) / 2;
+							} else {
+								newSize.width = image.size.height / (image.crop.width / image.crop.height);
+								offset.x = (image.size.width - newSize.width) / 2;
+							}
+							console.log('Cropped', image.size, "to", newSize, "offset", offset);
+
+							gmImage.crop(
+								newSize.width,
+								newSize.height,
+								offset.x,
+								offset.y
+							);
+							// gmImage.crop(image.resize.width, image.resize.height);
+						}
+						_callback(null);
+					},
+
+					// Resize
+					function(_callback) {
+						// If a width or height has been sepcified
+						if (!(!image.resize.width && !image.resize.height)) {
+							console.log("Resizing", image.resize);
+							gmImage.resize(image.resize.width, image.resize.height);
+						}
+						_callback(null);
+					},
+
+				], function(_error) {
+
+					//Stream it back.
 					gmImage.stream(function(_error, _stdout, _stderr) {
 						if (_error) {
-							return _callback(_error);
+							console.log(_error);
+							return _manipulationDoneCallback(_error);
 						}
 
 						var writeStream = fs.createWriteStream(config.cacheFolder + '/' + image.hash);
@@ -121,14 +164,20 @@ module.exports = function(_config) {
 
 						// Pipe to the cache folder
 						_stdout.pipe(writeStream);
-					});
 
-			// });
+						//Close up the waterfall when done
+						_stdout.on('end', function() {
+							_manipulationDoneCallback(null);
+						})
+					});
+				});
 
 			}
 
 		], function(_error) {
-			_next(_error);
+			if (_error) {
+				_next(_error);
+			}
 		});
 
 	}
