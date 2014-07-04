@@ -1,6 +1,8 @@
 IMMP: Image Manipulation Middleware Proxy
 =========================================
 
+[![NPM](https://nodei.co/npm/immp.png)](https://nodei.co/npm/immp/)
+
 This is an express middleware for manipulating images with imageMagick/graphicsMagic. You can also set it up to act as a proxy.
 
 This is very useful for web development where thumbnails and cropping is done. Instead of doing it by hand, just specify the size and ratio in the url.
