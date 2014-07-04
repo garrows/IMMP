@@ -2,6 +2,25 @@
   "name": "IMMP",
   "description": "Image Manipulation Middleware Proxy",
   "version": "1.0.1",
+  "repository": "garrows/IMMP",
+  "keywords": [
+      "imageMagick",
+      "graphicsMagic",
+      "image",
+      "graphics",
+      "manipulation",
+      "express",
+      "middleware"
+  ],
+  "author": {
+    "name": "Glen Arrowsmith",
+    "email": "glen.arrowsmith@gmail.com",
+    "url": "http://garrows.com"
+  },
+  "contributors": {
+    "name": "David Tsuji",
+    "email": "david@flodge.com"
+  },
   "scripts": {
     "start": "node ./bin/www"
   },
@@ -18,5 +37,6 @@
     "sc-cast": "0.0.6",
     "static-favicon": "~1.0.0",
     "underscore": "^1.6.0"
-  }
+  },
+  "license": "MIT"
 }
