@@ -21,11 +21,12 @@ module.exports = function(_config) {
 		var crop = _req.query.crop || '0x0';
 
 		var gmOptions = {
-			imageMagick: true
+			// imageMagick: true
+			// graphicsMagick: true
 		};
 
 		var image = {
-			location: _req.query.img,
+			location: _req.query.image,
 			resize: {
 				width: cast(_.first(dimensions.match(/^[^x]+/)), 'number') || null,
 				height: cast(_.first(dimensions.match(/[^x]+$/)), 'number') || null
@@ -65,12 +66,13 @@ module.exports = function(_config) {
 				} catch (e) {};
 
 				if (stat && now - createdAt < config.ttl) {
+					console.log("Using cache");
 					gm(config.cacheFolder + '/' + image.hash)
 						.options(gmOptions)
 						.stream()
 						.pipe(_res);
 				} else {
-					//No cache
+					console.log("No cache");
 					_callback();
 				}
 
@@ -95,6 +97,7 @@ module.exports = function(_config) {
 				var gmImage = gm(_imageStream, image.hash).options(gmOptions);
 
 				async.waterfall([
+
 					//Get original size
 					function(_callback) {
 						gmImage.size({bufferStream: true}, function(_error, _size) {
@@ -110,6 +113,7 @@ module.exports = function(_config) {
 					// Crop
 					function(_callback) {
 						// If a crop ratio has been specified
+						console.log(image.crop.width, image.crop.height);
 						if (!(!image.crop.width && !image.crop.height)) {
 
 							var newSize = {
@@ -120,20 +124,29 @@ module.exports = function(_config) {
 
 							if (image.size.height < image.size.width) {
 								newSize.height = image.size.width / (image.crop.width / image.crop.height);
-								offset.y = (image.size.height - newSize.height) / 2;
+								//Special 1:1 case
+								if (1 == (image.crop.width / image.crop.height)) {
+									console.log("here")
+									newSize.width = image.size.height;
+								}
+
 							} else {
 								newSize.width = image.size.height / (image.crop.width / image.crop.height);
-								offset.x = (image.size.width - newSize.width) / 2;
+								//Special 1:1 case
+								if (1 == (image.crop.width / image.crop.height)) {
+									newSize.height = image.size.width;
+								}
 							}
-							console.log('Cropped', image.size, "to", newSize, "offset", offset);
+							offset.x = (image.size.width - newSize.width) / 2;
+							offset.y = (image.size.height - newSize.height) / 2;
 
+							console.log('Cropped', image.size, "to", newSize, "offset", offset);
 							gmImage.crop(
 								newSize.width,
 								newSize.height,
 								offset.x,
 								offset.y
 							);
-							// gmImage.crop(image.resize.width, image.resize.height);
 						}
 						_callback(null);
 					},
