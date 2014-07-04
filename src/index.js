@@ -122,21 +122,18 @@ module.exports = function(_config) {
 							};
 							var offset = { x: 0, y: 0};
 
-							if (image.size.height < image.size.width) {
-								newSize.height = image.size.width / (image.crop.width / image.crop.height);
-								//Special 1:1 case
-								if (1 == (image.crop.width / image.crop.height)) {
-									console.log("here")
-									newSize.width = image.size.height;
-								}
+							var sourceRatio = image.size.width / image.size.height;
+							var targetRatio = image.crop.width / image.crop.height;
 
+							if (sourceRatio < targetRatio) {
+								newSize.height = image.size.width / targetRatio;
+							} else if (sourceRatio > targetRatio) {
+								newSize.width = image.size.height * targetRatio;
 							} else {
-								newSize.width = image.size.height / (image.crop.width / image.crop.height);
-								//Special 1:1 case
-								if (1 == (image.crop.width / image.crop.height)) {
-									newSize.height = image.size.width;
-								}
+								//Matching ratios. dont need to do anything.
+								return _callback(null);
 							}
+
 							offset.x = (image.size.width - newSize.width) / 2;
 							offset.y = (image.size.height - newSize.height) / 2;
 

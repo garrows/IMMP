@@ -23,6 +23,7 @@ app.get('/',  function(req, res) {
         images: [
             "/images/brisbane.jpg",
             "/images/test.jpg",
+            "/images/portraitcat.jpg",
             "/images/monster.png",
             "/images/wat.jpg"
         ],
