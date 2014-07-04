@@ -39,7 +39,13 @@ app.get('/',  function(req, res) {
 });
 
 app.use('/im/*', require('./src')({
-    ttl: 0
+    ttl: 0,
+    // ttl: 1000 * 60 * 60 * 24 * 7, // 1 week
+    // imageMagick: true,
+    // graphicsMagick: true,
+    // cacheFolder: os.tmpdir(),
+    // allowProxy: false
+    imageDir: process.cwd() + '/public'
 }));
 
 /// catch 404 and forward to error handler

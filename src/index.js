@@ -12,7 +12,9 @@ module.exports = function(_config) {
 	var config = _.extend({
 
 		cacheFolder: os.tmpdir(),
-		ttl: 1000 * 60 * 60 * 24 * 7 // 1 week
+		ttl: 1000 * 60 * 60 * 24 * 7, // 1 week
+		allowProxy: false,
+		imageDir: process.cwd(),
 
 	}, _config);
 
@@ -20,10 +22,9 @@ module.exports = function(_config) {
 		var dimensions = _req.query.resize || '0x0';
 		var crop = _req.query.crop || '0x0';
 
-		var gmOptions = {
-			// imageMagick: true
-			// graphicsMagick: true
-		};
+		var gmOptions = {};
+		if (config.imageMagick) { gmOptions.imageMagic = config.imageMagick; }
+		if (config.graphicsMagick) { gmOptions.graphicsMagick = config.graphicsMagick; }
 
 		var image = {
 			location: _req.query.image,
@@ -41,10 +42,10 @@ module.exports = function(_config) {
 			}
 		};
 
-		if (!/^https?\:/.test(image.location)) {
+		if (config.allowProxy && !/^https?\:/.test(image.location)) {
 			image.location = image.location.trim().replace(/^\//, '');
 			image.location = _req.protocol + '://' + _req.headers.host + '/' + image.location;
-		}
+		} 
 
 		image.hash = crypto.createHash('sha1').update(JSON.stringify(image)).digest('hex');
 
@@ -66,13 +67,11 @@ module.exports = function(_config) {
 				} catch (e) {};
 
 				if (stat && now - createdAt < config.ttl) {
-					console.log("Using cache");
 					gm(config.cacheFolder + '/' + image.hash)
 						.options(gmOptions)
 						.stream()
 						.pipe(_res);
 				} else {
-					console.log("No cache");
 					_callback();
 				}
 
@@ -82,19 +81,25 @@ module.exports = function(_config) {
 			 * Get the image
 			 */
 			function(_callback) {
-				http.get(image.location, function(_httpResponse) {
-					if (_httpResponse.statusCode >= 400) return _callback(new Error('status ' + _httpResponse.statusCode));
-					_callback(null, _httpResponse);
-				}).on('error', function(_error) {
-					_callback(_error);
-				});
+				if (config.allowProxy) {
+					http.get(image.location, function(_httpResponse) {
+						if (_httpResponse.statusCode >= 400) return _callback(new Error('status ' + _httpResponse.statusCode));
+						_callback(null, _httpResponse);
+					}).on('error', function(_error) {
+						_callback(_error);
+					});
+				} else {
+					console.log(process.cwd() + image.location);
+					var imageStream = fs.createReadStream(config.imageDir + image.location);
+					_callback(null, imageStream);
+				}
 			},
 
 			/**
 			 * Perform image resize/crop operations
 			 */
-			function(_imageStream, _manipulationDoneCallback) {
-				var gmImage = gm(_imageStream, image.hash).options(gmOptions);
+			function(_imageSrc, _manipulationDoneCallback) {
+				var gmImage = gm(_imageSrc, image.hash).options(gmOptions);
 
 				async.waterfall([
 
@@ -102,6 +107,7 @@ module.exports = function(_config) {
 					function(_callback) {
 						gmImage.size({bufferStream: true}, function(_error, _size) {
 							if (_error) {
+								console.log(_error);
 								return _callback(_error);
 							}
 							image.size = _size;
@@ -113,7 +119,6 @@ module.exports = function(_config) {
 					// Crop
 					function(_callback) {
 						// If a crop ratio has been specified
-						console.log(image.crop.width, image.crop.height);
 						if (!(!image.crop.width && !image.crop.height)) {
 
 							var newSize = {
@@ -137,7 +142,7 @@ module.exports = function(_config) {
 							offset.x = (image.size.width - newSize.width) / 2;
 							offset.y = (image.size.height - newSize.height) / 2;
 
-							console.log('Cropped', image.size, "to", newSize, "offset", offset);
+							// console.log('Cropped', image.size, "to", newSize, "offset", offset);
 							gmImage.crop(
 								newSize.width,
 								newSize.height,
@@ -152,7 +157,6 @@ module.exports = function(_config) {
 					function(_callback) {
 						// If a width or height has been sepcified
 						if (!(!image.resize.width && !image.resize.height)) {
-							console.log("Resizing", image.resize);
 							gmImage.resize(image.resize.width, image.resize.height);
 						}
 						_callback(null);
