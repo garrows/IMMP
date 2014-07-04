@@ -44,7 +44,7 @@ app.use('/im/*', require('./src')({
     // imageMagick: true,
     // graphicsMagick: true,
     // cacheFolder: os.tmpdir(),
-    // allowProxy: false
+    // allowProxy: false,
     imageDir: process.cwd() + '/public'
 }));
 

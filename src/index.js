@@ -45,11 +45,9 @@ module.exports = function(_config) {
 		if (config.allowProxy && !/^https?\:/.test(image.location)) {
 			image.location = image.location.trim().replace(/^\//, '');
 			image.location = _req.protocol + '://' + _req.headers.host + '/' + image.location;
-		} 
+		}
 
 		image.hash = crypto.createHash('sha1').update(JSON.stringify(image)).digest('hex');
-
-		console.log(image);
 
 		async.waterfall([
 
@@ -89,7 +87,6 @@ module.exports = function(_config) {
 						_callback(_error);
 					});
 				} else {
-					console.log(process.cwd() + image.location);
 					var imageStream = fs.createReadStream(config.imageDir + image.location);
 					_callback(null, imageStream);
 				}
