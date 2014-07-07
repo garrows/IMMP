@@ -41,7 +41,7 @@ In your app.js (assuming a standard express.js setup), add the following lines.
 ```
 var immp = require('immp');
 
-app.use('/im/*', require('./src')({
+app.use('/im/*', immp({
     ttl: 1000 * 60 * 60 * 24 * 7, // 1 week
     imageMagick: true,
     graphicsMagick: true,
