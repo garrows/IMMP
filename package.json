@@ -12,6 +12,7 @@
       "express",
       "middleware"
   ],
+  "main": "src/index.js",
   "author": {
     "name": "Glen Arrowsmith",
     "email": "glen.arrowsmith@gmail.com",
