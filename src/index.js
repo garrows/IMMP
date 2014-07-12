@@ -5,8 +5,7 @@ var _ = require('underscore'),
 	fs = require('fs'),
 	os = require('os'),
 	gm = require('gm'),
-	http = require('http'),
-	request = require('request');
+	http = require('http');
 
 module.exports = function(_config) {
 	var config = _.extend({
