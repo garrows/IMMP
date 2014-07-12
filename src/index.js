@@ -106,7 +106,9 @@ module.exports = function(_config) {
 
 					//Get original size
 					function(_callback) {
-						gmImage.size({bufferStream: true}, function(_error, _size) {
+						gmImage.size({
+							bufferStream: true
+						}, function(_error, _size) {
 							if (_error) {
 								console.log(_error);
 								return _callback(_error);
@@ -126,7 +128,10 @@ module.exports = function(_config) {
 								width: image.size.width,
 								height: image.size.height
 							};
-							var offset = { x: 0, y: 0};
+							var offset = {
+								x: 0,
+								y: 0
+							};
 
 							var sourceRatio = image.size.width / image.size.height;
 							var targetRatio = image.crop.width / image.crop.height;
