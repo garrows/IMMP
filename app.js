@@ -18,7 +18,7 @@ app.use(bodyParser.urlencoded());
 app.use(cookieParser());
 app.use(express.static(path.join(__dirname, 'public')));
 
-app.get('/',  function(req, res) {
+app.get('/', function(req, res) {
     var template = {
         images: [
             "/images/brisbane.jpg",
@@ -35,16 +35,24 @@ app.get('/',  function(req, res) {
             "crop=1x1",
         ]
     };
-	res.render(__dirname + '/public/index.ejs', template);
+    res.render(__dirname + '/public/index.ejs', template);
 });
+
+try {
+    require('fs').mkdirSync('.tmp');
+} catch (e) {};
+
+try {
+    require('fs').mkdirSync('.tmp/immp');
+} catch (e) {};
 
 app.use('/im/*', require('./src')({
     ttl: 0,
     // ttl: 1000 * 60 * 60 * 24 * 7, // 1 week
-    // imageMagick: true,
-    // graphicsMagick: true,
-    // cacheFolder: os.tmpdir(),
-    // allowProxy: false,
+    imageMagick: true,
+    // graphicsMagick: false,
+    cacheFolder: process.cwd() + '/.tmp/immp',
+    // allowProxy: true,
     imageDir: process.cwd() + '/public'
 }));
 
