@@ -22,8 +22,12 @@ module.exports = function(_config) {
 		var crop = _req.query.crop || '0x0';
 
 		var gmOptions = {};
-		if (config.imageMagick) { gmOptions.imageMagic = config.imageMagick; }
-		if (config.graphicsMagick) { gmOptions.graphicsMagick = config.graphicsMagick; }
+		if (config.imageMagick) {
+			gmOptions.imageMagick = config.imageMagick;
+		}
+		if (config.graphicsMagick) {
+			gmOptions.graphicsMagick = config.graphicsMagick;
+		}
 
 		var image = {
 			location: _req.query.image,
