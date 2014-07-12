@@ -42,7 +42,8 @@ module.exports = function(_config) {
 			size: {
 				width: 0,
 				height: 0
-			}
+			},
+			upscale: /true/i.test(_req.query.upscale)
 		};
 
 		if (config.allowProxy && !/^https?\:/.test(image.location)) {
@@ -157,7 +158,7 @@ module.exports = function(_config) {
 					function(_callback) {
 						// If a width or height has been sepcified
 						if (!(!image.resize.width && !image.resize.height)) {
-							gmImage.resize(image.resize.width, image.resize.height);
+							gmImage.resize(image.resize.width, image.resize.height, image.upscale === true ? '' : '>');
 						}
 						_callback(null);
 					},
