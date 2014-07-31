@@ -1,11 +1,13 @@
-var cluster = require('cluster'),
+var async = require('async'),
+	cluster = require('cluster'),
+	cwd = process.cwd(),
 	fs = require('fs'),
 	gm = require('gm'),
 	http = require('http'),
 	path = require('path'),
 	should = require('should');
 
-var immpPath = path.join(process.cwd(), '/.tmp/immp'),
+var immpPath = path.join(cwd, '/.tmp/immp'),
 	gmOptions = {
 		bufferStream: true,
 		imageMagick: true
@@ -15,7 +17,7 @@ describe('immp', function() {
 
 	before(function(_done) {
 		cluster.setupMaster({
-			exec: path.join(process.cwd(), '/bin/www')
+			exec: path.join(cwd, '/bin/www')
 		});
 		cluster.fork();
 		setTimeout(function() {
