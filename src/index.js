@@ -70,7 +70,6 @@ module.exports = function(_config) {
 				} catch (e) {};
 
 				if (stat && now - createdAt < config.ttl) {
-					_res.statusCode = 304;
 					gm(config.cacheFolder + '/' + image.hash)
 						.options(gmOptions)
 						.stream()
