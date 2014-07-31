@@ -222,43 +222,4 @@ describe('immp', function() {
 
 	});
 
-	it('should invalidate the cache by using adding a timestamp to the query object', function(_done) {
-		this.slow(5000);
-		this.timeout(10000);
-
-		var requestUrl = 'http://localhost:3000/im/?image=/images/robot.jpg&crop=16x19&resize=300x300';
-
-		async.waterfall([
-
-			function(_callback) {
-
-				http.get(requestUrl, function(_httpResponse) {
-					_httpResponse.statusCode.should.eql(200);
-					_callback();
-				});
-
-			},
-
-			function(_callback) {
-
-				http.get(requestUrl, function(_httpResponse) {
-					_httpResponse.statusCode.should.eql(304);
-					_callback();
-				});
-
-			},
-
-			function(_callback) {
-
-				http.get(requestUrl + '&c=1', function(_httpResponse) {
-					_httpResponse.statusCode.should.eql(200);
-					_callback();
-				});
-
-			}
-
-		], _done);
-
-	});
-
 });
