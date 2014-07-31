@@ -30,6 +30,7 @@ module.exports = function(_config) {
 		}
 
 		var image = {
+			query: JSON.stringify(_req.query),
 			location: _req.query.image,
 			resize: {
 				width: cast(_.first(dimensions.match(/^[^x]+/)), 'number') || null,
