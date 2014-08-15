@@ -18,8 +18,9 @@ module.exports = function(_config) {
 	}, _config);
 
 	return function(_req, _res, _next) {
-		var dimensions = _req.query.resize || '0x0';
-		var crop = _req.query.crop || '0x0';
+		var dimensions = _req.query.resize || '0x0',
+			crop = _req.query.crop || '0x0',
+			quality = _req.query.quality;
 
 		var gmOptions = {};
 		if (config.imageMagick) {
@@ -44,6 +45,7 @@ module.exports = function(_config) {
 				width: 0,
 				height: 0
 			},
+			quality: cast(quality, 'number'),
 			upscale: /true/i.test(_req.query.upscale)
 		};
 
@@ -149,7 +151,6 @@ module.exports = function(_config) {
 							offset.x = (image.size.width - newSize.width) / 2;
 							offset.y = (image.size.height - newSize.height) / 2;
 
-							// console.log('Cropped', image.size, "to", newSize, "offset", offset);
 							gmImage.crop(
 								newSize.width,
 								newSize.height,
@@ -168,6 +169,14 @@ module.exports = function(_config) {
 						}
 						_callback(null);
 					},
+
+					// Quality
+					function(_callback) {
+						if (typeof image.quality === 'number') {
+							gmImage.quality(image.quality);
+						}
+						_callback();
+					}
 
 				], function(_error) {
 

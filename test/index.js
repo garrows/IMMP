@@ -222,4 +222,51 @@ describe('immp', function() {
 
 	});
 
+	it('should set the quality', function(_done) {
+		this.slow(5000);
+		this.timeout(10000);
+
+		async.waterfall([
+
+			// Get the size without compression
+			function(_callback) {
+
+				http.get('http://localhost:3000/im/?image=/images/robot.jpg&quality=invalidQualityValue', function(_httpResponse) {
+
+					gm(_httpResponse)
+						.options(gmOptions)
+						.filesize(function(_error, _filesize) {
+							if (_error) return _callback(_error);
+							_callback(null, parseInt(_filesize));
+						});
+
+				});
+
+			},
+
+			// Get the size with compression
+			function(_fileSizeWithoutCompression, _callback) {
+
+				http.get('http://localhost:3000/im/?image=/images/robot.jpg&quality=50', function(_httpResponse) {
+
+					gm(_httpResponse)
+						.options(gmOptions)
+						.filesize(function(_error, _filesize) {
+							if (_error) return _callback(_error);
+							var filesize = parseInt(_filesize);
+							filesize.should.be.lessThan(_fileSizeWithoutCompression);
+							(filesize / _fileSizeWithoutCompression).should.be.greaterThan(.5).and.lessThan(.8);
+							_callback(null, filesize);
+						});
+
+				});
+
+			}
+
+		], function(_error) {
+			_done(_error);
+		});
+
+	});
+
 });

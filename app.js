@@ -33,6 +33,7 @@ app.get('/', function(req, res) {
             "resize=500x100",
             "resize=100x100&crop=16x9",
             "crop=1x1",
+            "quality=50"
         ]
     };
     res.render(__dirname + '/public/index.ejs', template);
