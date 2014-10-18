@@ -7,7 +7,7 @@ var _ = require('underscore'),
 	gm = require('gm'),
 	http = require('http');
 
-module.exports = function(_config) {
+module.exports = function (_config) {
 	var config = _.extend({
 
 		cacheFolder: os.tmpdir(),
@@ -17,16 +17,16 @@ module.exports = function(_config) {
 
 	}, _config);
 
-	return function(_req, _res, _next) {
+	return function (_req, _res, _next) {
 		var dimensions = _req.query.resize || '0x0',
 			crop = _req.query.crop || '0x0',
 			quality = _req.query.quality;
 
 		var gmOptions = {};
-		if (config.imageMagick) {
+		if(config.imageMagick) {
 			gmOptions.imageMagick = config.imageMagick;
 		}
-		if (config.graphicsMagick) {
+		if(config.graphicsMagick) {
 			gmOptions.graphicsMagick = config.graphicsMagick;
 		}
 
@@ -49,7 +49,7 @@ module.exports = function(_config) {
 			upscale: /true/i.test(_req.query.upscale)
 		};
 
-		if (config.allowProxy && !/^https?\:/.test(image.location)) {
+		if(config.allowProxy && !/^https?\:/.test(image.location)) {
 			image.location = image.location.trim().replace(/^\//, '');
 			image.location = _req.protocol + '://' + _req.headers.host + '/' + image.location;
 		}
@@ -61,7 +61,7 @@ module.exports = function(_config) {
 			/**
 			 * If the image already exists and it's within the TTL range use it, otherwise continue
 			 */
-			function(_callback) {
+			function (_callback) {
 				var stat,
 					createdAt = 0,
 					now = new Date().getTime();
@@ -69,9 +69,9 @@ module.exports = function(_config) {
 				try {
 					stat = fs.statSync(config.cacheFolder + '/' + image.hash);
 					createdAt = cast(stat.mtime, 'date').getTime();
-				} catch (e) {};
+				} catch(e) {};
 
-				if (stat && now - createdAt < config.ttl) {
+				if(stat && now - createdAt < config.ttl) {
 					gm(config.cacheFolder + '/' + image.hash)
 						.options(gmOptions)
 						.stream()
@@ -85,12 +85,12 @@ module.exports = function(_config) {
 			/**
 			 * Get the image
 			 */
-			function(_callback) {
-				if (config.allowProxy) {
-					http.get(image.location, function(_httpResponse) {
-						if (_httpResponse.statusCode >= 400) return _callback(new Error('status ' + _httpResponse.statusCode));
+			function (_callback) {
+				if(config.allowProxy) {
+					http.get(image.location, function (_httpResponse) {
+						if(_httpResponse.statusCode >= 400) return _callback(new Error('status ' + _httpResponse.statusCode));
 						_callback(null, _httpResponse);
-					}).on('error', function(_error) {
+					}).on('error', function (_error) {
 						_callback(_error);
 					});
 				} else {
@@ -102,17 +102,17 @@ module.exports = function(_config) {
 			/**
 			 * Perform image resize/crop operations
 			 */
-			function(_imageSrc, _manipulationDoneCallback) {
+			function (_imageSrc, _manipulationDoneCallback) {
 				var gmImage = gm(_imageSrc, image.hash).options(gmOptions);
 
 				async.waterfall([
 
 					//Get original size
-					function(_callback) {
+					function (_callback) {
 						gmImage.size({
 							bufferStream: true
-						}, function(_error, _size) {
-							if (_error) {
+						}, function (_error, _size) {
+							if(_error) {
 								console.log(_error);
 								return _callback(_error);
 							}
@@ -123,9 +123,9 @@ module.exports = function(_config) {
 					},
 
 					// Crop
-					function(_callback) {
+					function (_callback) {
 						// If a crop ratio has been specified
-						if (!(!image.crop.width && !image.crop.height)) {
+						if(!(!image.crop.width && !image.crop.height)) {
 
 							var newSize = {
 								width: image.size.width,
@@ -139,9 +139,9 @@ module.exports = function(_config) {
 							var sourceRatio = image.size.width / image.size.height;
 							var targetRatio = image.crop.width / image.crop.height;
 
-							if (sourceRatio < targetRatio) {
+							if(sourceRatio < targetRatio) {
 								newSize.height = image.size.width / targetRatio;
-							} else if (sourceRatio > targetRatio) {
+							} else if(sourceRatio > targetRatio) {
 								newSize.width = image.size.height * targetRatio;
 							} else {
 								//Matching ratios. dont need to do anything.
@@ -162,27 +162,27 @@ module.exports = function(_config) {
 					},
 
 					// Resize
-					function(_callback) {
+					function (_callback) {
 						// If a width or height has been sepcified
-						if (!(!image.resize.width && !image.resize.height)) {
+						if(!(!image.resize.width && !image.resize.height)) {
 							gmImage.resize(image.resize.width, image.resize.height, image.upscale === true ? '' : '>');
 						}
 						_callback(null);
 					},
 
 					// Quality
-					function(_callback) {
-						if (typeof image.quality === 'number') {
+					function (_callback) {
+						if(typeof image.quality === 'number') {
 							gmImage.quality(image.quality);
 						}
 						_callback();
 					}
 
-				], function(_error) {
+				], function (_error) {
 
 					//Stream it back.
-					gmImage.stream(function(_error, _stdout, _stderr) {
-						if (_error) {
+					gmImage.stream(function (_error, _stdout, _stderr) {
+						if(_error) {
 							console.log(_error);
 							return _manipulationDoneCallback(_error);
 						}
@@ -196,7 +196,7 @@ module.exports = function(_config) {
 						_stdout.pipe(writeStream);
 
 						//Close up the waterfall when done
-						_stdout.on('end', function() {
+						_stdout.on('end', function () {
 							_manipulationDoneCallback(null);
 						})
 					});
@@ -204,8 +204,8 @@ module.exports = function(_config) {
 
 			}
 
-		], function(_error) {
-			if (_error) {
+		], function (_error) {
+			if(_error) {
 				_next(_error);
 			}
 		});
