@@ -269,4 +269,46 @@ describe('immp', function () {
 
 	});
 
+	it('should work for http images', function (_done) {
+		this.slow(5000);
+		this.timeout(10000);
+
+		http.get('http://localhost:3000/im/?image=http://localhost:3000/images/robot.jpg&crop=1x1&resize=50x100', function (_httpResponse) {
+
+			gm(_httpResponse)
+				.options(gmOptions)
+				.size(function (_error, _size) {
+					if(_error) return _done(_error);
+
+					_size.width.should.equal(50);
+					_size.height.should.equal(50);
+
+					_done();
+				});
+
+		});
+
+	});
+
+	it('should work for https images', function (_done) {
+		this.slow(5000);
+		this.timeout(10000);
+
+		http.get('http://localhost:3000/im/?image=https://www.google.com/images/srpr/logo11w.png&crop=1x1&resize=50x100', function (_httpResponse) {
+
+			gm(_httpResponse)
+				.options(gmOptions)
+				.size(function (_error, _size) {
+					if(_error) return _done(_error);
+
+					_size.width.should.equal(50);
+					_size.height.should.equal(50);
+
+					_done();
+				});
+
+		});
+
+	});
+
 });

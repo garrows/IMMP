@@ -5,6 +5,7 @@ var _ = require('underscore'),
 	fs = require('fs'),
 	os = require('os'),
 	gm = require('gm'),
+	https = require('https'),
 	http = require('http');
 
 module.exports = function (_config) {
@@ -12,7 +13,7 @@ module.exports = function (_config) {
 
 		cacheFolder: os.tmpdir(),
 		ttl: 1000 * 60 * 60 * 24 * 7, // 1 week
-		allowProxy: false,
+		allowProxy: true,
 		imageDir: process.cwd(),
 
 	}, _config);
@@ -87,7 +88,11 @@ module.exports = function (_config) {
 			 */
 			function (_callback) {
 				if(config.allowProxy) {
-					http.get(image.location, function (_httpResponse) {
+					var client = http;
+					if(image.location.indexOf('https://') === 0) {
+						client = https;
+					}
+					client.get(image.location, function (_httpResponse) {
 						if(_httpResponse.statusCode >= 400) return _callback(new Error('status ' + _httpResponse.statusCode));
 						_callback(null, _httpResponse);
 					}).on('error', function (_error) {
