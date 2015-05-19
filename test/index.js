@@ -38,6 +38,8 @@ describe('immp', function () {
 
 		http.get('http://localhost:3000/im/?image=/images/robot.jpg&resize=200x0', function (_httpResponse) {
 
+			_httpResponse.headers['content-type'].should.eql('image/jpeg');
+
 			gm(_httpResponse)
 				.options(gmOptions)
 				.size(function (_error, _size) {
@@ -58,6 +60,8 @@ describe('immp', function () {
 
 		http.get('http://localhost:3000/im/?image=/images/robot.jpg&resize=0x200', function (_httpResponse) {
 
+			_httpResponse.headers['content-type'].should.eql('image/jpeg');
+
 			gm(_httpResponse)
 				.options(gmOptions)
 				.size(function (_error, _size) {
@@ -77,6 +81,8 @@ describe('immp', function () {
 		this.timeout(10000);
 
 		http.get('http://localhost:3000/im/?image=/images/robot.jpg&resize=2000x2000', function (_httpResponse) {
+
+			_httpResponse.headers['content-type'].should.eql('image/jpeg');
 
 			gm(_httpResponse)
 				.options(gmOptions)
@@ -99,6 +105,8 @@ describe('immp', function () {
 
 		http.get('http://localhost:3000/im/?image=/images/robot.jpg&resize=2000x2000&upscale=true', function (_httpResponse) {
 
+			_httpResponse.headers['content-type'].should.eql('image/jpeg');
+
 			gm(_httpResponse)
 				.options(gmOptions)
 				.size(function (_error, _size) {
@@ -119,6 +127,8 @@ describe('immp', function () {
 		this.timeout(10000);
 
 		http.get('http://localhost:3000/im/?image=/images/robot.jpg&resize=100x200', function (_httpResponse) {
+
+			_httpResponse.headers['content-type'].should.eql('image/jpeg');
 
 			gm(_httpResponse)
 				.options(gmOptions)
@@ -143,6 +153,8 @@ describe('immp', function () {
 
 		http.get('http://localhost:3000/im/?image=/images/robot.jpg&crop=1x1', function (_httpResponse) {
 
+			_httpResponse.headers['content-type'].should.eql('image/jpeg');
+
 			gm(_httpResponse)
 				.options(gmOptions)
 				.size(function (_error, _size) {
@@ -163,6 +175,8 @@ describe('immp', function () {
 		this.timeout(10000);
 
 		http.get('http://localhost:3000/im/?image=/images/robot.jpg&crop=9x16', function (_httpResponse) {
+
+			_httpResponse.headers['content-type'].should.eql('image/jpeg');
 
 			gm(_httpResponse)
 				.options(gmOptions)
@@ -186,6 +200,8 @@ describe('immp', function () {
 
 		http.get('http://localhost:3000/im/?image=/images/robot.jpg&crop=16x9', function (_httpResponse) {
 
+			_httpResponse.headers['content-type'].should.eql('image/jpeg');
+
 			gm(_httpResponse)
 				.options(gmOptions)
 				.size(function (_error, _size) {
@@ -206,6 +222,8 @@ describe('immp', function () {
 		this.timeout(10000);
 
 		http.get('http://localhost:3000/im/?image=/images/robot.jpg&crop=1x1&resize=50x100', function (_httpResponse) {
+
+			_httpResponse.headers['content-type'].should.eql('image/jpeg');
 
 			gm(_httpResponse)
 				.options(gmOptions)
@@ -233,6 +251,8 @@ describe('immp', function () {
 
 				http.get('http://localhost:3000/im/?image=/images/robot.jpg&quality=invalidQualityValue', function (_httpResponse) {
 
+					_httpResponse.headers['content-type'].should.eql('image/jpeg');
+
 					gm(_httpResponse)
 						.options(gmOptions)
 						.filesize(function (_error, _filesize) {
@@ -248,6 +268,8 @@ describe('immp', function () {
 			function (_fileSizeWithoutCompression, _callback) {
 
 				http.get('http://localhost:3000/im/?image=/images/robot.jpg&quality=50', function (_httpResponse) {
+
+					_httpResponse.headers['content-type'].should.eql('image/jpeg');
 
 					gm(_httpResponse)
 						.options(gmOptions)
@@ -269,11 +291,35 @@ describe('immp', function () {
 
 	});
 
+	it('should respect the orientation information', function (_done) {
+		this.slow(5000);
+		this.timeout(10000);
+
+		http.get('http://localhost:3000/im/?image=/images/Landscape_8.jpg&quality=50', function (_httpResponse) {
+
+			_httpResponse.headers['content-type'].should.eql('image/jpeg');
+
+			gm(_httpResponse)
+				.options(gmOptions)
+				.size(function (_error, _size) {
+					if(_error) return _done(_error);
+					_size.width.should.equal(600);
+					_size.height.should.equal(450);
+
+					_done();
+				});
+
+		});
+
+	});
+
 	it('should work for http images', function (_done) {
 		this.slow(5000);
 		this.timeout(10000);
 
 		http.get('http://localhost:3000/im/?image=http://localhost:3000/images/robot.jpg&crop=1x1&resize=50x100', function (_httpResponse) {
+
+			_httpResponse.headers['content-type'].should.eql('image/jpeg');
 
 			gm(_httpResponse)
 				.options(gmOptions)
@@ -296,6 +342,8 @@ describe('immp', function () {
 
 		http.get('http://localhost:3000/im/?image=https://www.google.com/images/srpr/logo11w.png&crop=1x1&resize=50x100', function (_httpResponse) {
 
+			_httpResponse.headers['content-type'].should.eql('image/png');
+
 			gm(_httpResponse)
 				.options(gmOptions)
 				.size(function (_error, _size) {
@@ -308,6 +356,8 @@ describe('immp', function () {
 				});
 
 		});
+
+
 
 	});
 
