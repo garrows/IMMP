@@ -127,6 +127,24 @@ module.exports = function (_config) {
 						});
 					},
 
+					//Get original content-type
+					function (_callback) {
+						gmImage.format({
+							bufferStream: true
+						}, function (_error, _format) {
+							if(_error) {
+								console.log(_error);
+								return _callback(_error);
+							}
+							image.format = _format;
+							_res.set({
+								'Content-Type': 'image/' + _format.toLowerCase()
+							});
+
+							_callback(null);
+						});
+					},
+
 					// Crop
 					function (_callback) {
 						// If a crop ratio has been specified
@@ -186,7 +204,7 @@ module.exports = function (_config) {
 				], function (_error) {
 
 					//Stream it back.
-					gmImage.stream(function (_error, _stdout, _stderr) {
+					gmImage.autoOrient().stream(function (_error, _stdout, _stderr) {
 						if(_error) {
 							console.log(_error);
 							return _manipulationDoneCallback(_error);
