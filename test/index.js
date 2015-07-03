@@ -357,7 +357,24 @@ describe('immp', function () {
 
 		});
 
+	});
 
+	it('should still have the right content-type & size when cached', function (_done) {
+		http.get('http://localhost:3000/im/?image=/images/Landscape_8.jpg&quality=50', function (_httpResponse) {
+
+			_httpResponse.headers['content-type'].should.eql('image/jpeg');
+
+			gm(_httpResponse)
+				.options(gmOptions)
+				.size(function (_error, _size) {
+					if(_error) return _done(_error);
+					_size.width.should.equal(600);
+					_size.height.should.equal(450);
+
+					_done();
+				});
+
+		});
 
 	});
 

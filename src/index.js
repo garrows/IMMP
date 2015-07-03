@@ -73,10 +73,24 @@ module.exports = function (_config) {
 				} catch(e) {};
 
 				if(stat && now - createdAt < config.ttl) {
+
 					gm(config.cacheFolder + '/' + image.hash)
 						.options(gmOptions)
+						.format({
+							bufferStream: true
+						}, function (_error, _format) {
+							if(_error) {
+								console.log(_error);
+								return _callback(_error);
+							}
+							image.format = _format;
+							_res.set({
+								'Content-Type': 'image/' + _format.toLowerCase()
+							});
+						})
 						.stream()
 						.pipe(_res);
+
 				} else {
 					_callback();
 				}
