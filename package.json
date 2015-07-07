@@ -1,7 +1,7 @@
 {
   "name": "immp",
   "description": "Image Manipulation Middleware Proxy",
-  "version": "1.2.3",
+  "version": "1.2.4",
   "repository": "garrows/IMMP",
   "keywords": [
     "imageMagick",
