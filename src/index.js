@@ -74,7 +74,7 @@ module.exports = function (_config) {
 
 				if(stat && now - createdAt < config.ttl) {
 
-					gm(config.cacheFolder + '/' + image.hash)
+					var gmImage = gm(config.cacheFolder + '/' + image.hash)
 						.options(gmOptions)
 						.format({
 							bufferStream: true
@@ -84,12 +84,12 @@ module.exports = function (_config) {
 								return _callback(_error);
 							}
 							image.format = _format;
-							_res.set({
-								'Content-Type': 'image/' + _format.toLowerCase()
-							});
-						})
-						.stream()
-						.pipe(_res);
+							if(!_res.headersSent) {
+								_res.header('Content-Type', 'image/' + _format.toLowerCase());
+							}
+							gmImage.stream()
+								.pipe(_res);
+						});
 
 				} else {
 					_callback();
@@ -151,9 +151,9 @@ module.exports = function (_config) {
 								return _callback(_error);
 							}
 							image.format = _format;
-							_res.set({
-								'Content-Type': 'image/' + _format.toLowerCase()
-							});
+							if(!_res.headersSent) {
+								_res.header('Content-Type', 'image/' + _format.toLowerCase());
+							}
 
 							_callback(null);
 						});
@@ -243,6 +243,7 @@ module.exports = function (_config) {
 
 		], function (_error) {
 			if(_error) {
+				console.log('error', _error);
 				_next(_error);
 			}
 		});
