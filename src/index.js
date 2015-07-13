@@ -72,7 +72,7 @@ module.exports = function (_config) {
 					createdAt = cast(stat.mtime, 'date').getTime();
 				} catch(e) {};
 
-				if(stat && now - createdAt < config.ttl) {
+				if(stat && now - createdAt < config.ttl && stat.size > 0) {
 
 					var gmImage = gm(config.cacheFolder + '/' + image.hash)
 						.options(gmOptions)
