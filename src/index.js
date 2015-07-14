@@ -132,7 +132,6 @@ module.exports = function (_config) {
 							bufferStream: true
 						}, function (_error, _size) {
 							if(_error) {
-								console.log(_error);
 								return _callback(_error);
 							}
 							image.size = _size;
@@ -217,6 +216,8 @@ module.exports = function (_config) {
 
 				], function (_error) {
 
+					if (_error) return _manipulationDoneCallback(_error);
+
 					//Stream it back.
 					gmImage.autoOrient().stream(function (_error, _stdout, _stderr) {
 						if(_error) {
@@ -243,8 +244,16 @@ module.exports = function (_config) {
 
 		], function (_error) {
 			if(_error) {
-				console.log('error', _error);
-				_next(_error);
+				if (_error.message.indexOf('no decode delegate') !== -1) {
+					_res.status(415).send({
+						error: {
+							status: 415,
+							message: 'Unsupported file format'
+						}
+					});
+				} else {
+					_next(_error);
+				}
 			}
 		});
 
