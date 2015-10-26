@@ -70,7 +70,7 @@ module.exports = function (_config) {
 				try {
 					stat = fs.statSync(config.cacheFolder + '/' + image.hash);
 					createdAt = cast(stat.mtime, 'date').getTime();
-				} catch(e) {};
+				} catch(e) {}
 
 				if(stat && now - createdAt < config.ttl && stat.size > 0) {
 
@@ -216,7 +216,7 @@ module.exports = function (_config) {
 
 				], function (_error) {
 
-					if (_error) return _manipulationDoneCallback(_error);
+					if(_error) return _manipulationDoneCallback(_error);
 
 					//Stream it back.
 					gmImage.autoOrient().stream(function (_error, _stdout, _stderr) {
@@ -236,7 +236,7 @@ module.exports = function (_config) {
 						//Close up the waterfall when done
 						_stdout.on('end', function () {
 							_manipulationDoneCallback(null);
-						})
+						});
 					});
 				});
 
@@ -244,7 +244,7 @@ module.exports = function (_config) {
 
 		], function (_error) {
 			if(_error) {
-				if (_error.message.indexOf('no decode delegate') !== -1) {
+				if(_error.message.indexOf('no decode delegate') !== -1) {
 					_res.status(415).send({
 						error: {
 							status: 415,
@@ -257,5 +257,5 @@ module.exports = function (_config) {
 			}
 		});
 
-	}
-}
+	};
+};
