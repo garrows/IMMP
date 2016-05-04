@@ -244,7 +244,7 @@ module.exports = function (_config) {
 
 		], function (_error) {
 			if(_error) {
-				if(_error.message.indexOf('no decode delegate') !== -1) {
+				if(_error.message.toLowerCase().indexOf('no decode delegate') !== -1) {
 					_res.status(415).send({
 						error: {
 							status: 415,

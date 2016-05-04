@@ -10,7 +10,8 @@ var async = require('async'),
 var immpPath = path.join(cwd, '/.tmp/immp'),
 	gmOptions = {
 		bufferStream: true,
-		imageMagick: true
+		imageMagick: false,
+		graphicsMagick: true
 	};
 
 var server = 'http://localhost:' + (process.env.PORT || 3000);
