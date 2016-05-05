@@ -50,8 +50,8 @@ try {
 app.use('/im/*', require('./src')({
     // ttl: 0,
     // ttl: 1000 * 60 * 60 * 24 * 7, // 1 week
-    imageMagick: true,
-    // graphicsMagick: false,
+    imageMagick: false,
+    graphicsMagick: true,
     cacheFolder: process.cwd() + '/.tmp/immp',
     // allowProxy: true,
     imageDir: process.cwd() + '/public'
