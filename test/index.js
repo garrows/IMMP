@@ -221,10 +221,11 @@ describe('immp', function () {
 
 	describe('with invalid operators', function(){
 		[
-			[0,0,0,0],
-			['a',0,0,0],
-			[-1,0,0,0],
-			['',0,0,0],
+			[0,0,0,0], // No image
+			[99999,99999,100,100], // Outside bounds
+			['a',0,0,0], // Non-numeric
+			[-1,0,0,0], // Not positive
+			['',0,0,0], // Not defined
 		].forEach(function(params){
 			it('should not do a custom crop with ' + params, function (_done) {
 				this.slow(5000);
