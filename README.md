@@ -68,6 +68,12 @@ Resize to 100x100 and change the ratio to 1:1
 
 `http://localhost:3000/im/?image=test.jpg&crop=1x1&resize=100x100`
 
+Crop the source image to the custom shape (source width, height, x, and y). See
+[GraphicsMagic crop](http://www.graphicsmagick.org/GraphicsMagick.html#details-crop)
+for more information. Non-negative integers only.
+
+`http://localhost:3000/im/?image=test.jpg&sx=100&sy=100&sw=100&sy=100`
+
 If you enable proxy mode, you can proxy images from other services like Amazon S3
 
 `http://localhost:3000/im/?http://s3.amazonaws.com/yourbucket/youimg.png&crop=1x1`
