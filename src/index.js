@@ -21,7 +21,13 @@ module.exports = function (_config) {
 	return function (_req, _res, _next) {
 		var dimensions = _req.query.resize || '0x0',
 			crop = _req.query.crop || '0x0',
-			quality = _req.query.quality;
+			quality = _req.query.quality,
+			customCrop = {
+				x: _req.query.sx,
+				y: _req.query.sy,
+				w: _req.query.sw,
+				h: _req.query.sh,
+			};
 
 		var gmOptions = {};
 		if(config.imageMagick) {
@@ -126,20 +132,6 @@ module.exports = function (_config) {
 
 				async.waterfall([
 
-					//Get original size
-					function (_callback) {
-						gmImage.size({
-							bufferStream: true
-						}, function (_error, _size) {
-							if(_error) {
-								return _callback(_error);
-							}
-							image.size = _size;
-
-							_callback(null);
-						});
-					},
-
 					//Get original content-type
 					function (_callback) {
 						gmImage.format({
@@ -158,7 +150,34 @@ module.exports = function (_config) {
 						});
 					},
 
-					// Crop
+					// Custom crop as per request
+					function (_callback) {
+						// All params should exist and be numeric.
+						var hasCrop = _.every(customCrop, function(param){
+							var num = Number(param);
+							return !isNaN(num) && num >= 0;
+						});
+						if(hasCrop){
+							gmImage.crop( customCrop.w, customCrop.h, customCrop.x, customCrop.y );
+						}
+						_callback(null);
+					},
+
+					//Get original size (after initial crop)
+					function (_callback) {
+						gmImage.size({
+							bufferStream: true
+						}, function (_error, _size) {
+							if(_error) {
+								return _callback(_error);
+							}
+							image.size = _size;
+
+							_callback(null);
+						});
+					},
+
+					// Aspect ratio
 					function (_callback) {
 						// If a crop ratio has been specified
 						if(!(!image.crop.width && !image.crop.height)) {

@@ -173,6 +173,85 @@ describe('immp', function () {
 
 	});
 
+	it('should do a custom crop', function (_done) {
+		this.slow(5000);
+		this.timeout(10000);
+
+		http.get(server + '/im/?image=/images/robot.jpg&sx=0&sy=0&sw=100&sh=111', function (_httpResponse) {
+
+			_httpResponse.headers['content-type'].should.eql('image/jpeg');
+
+			gm(_httpResponse)
+				.options(gmOptions)
+				.size(function (_error, _size) {
+					if(_error) return _done(_error);
+
+					_size.width.should.equal(100);
+					_size.height.should.equal(111);
+
+					_done();
+				});
+
+		});
+
+	});
+
+	it('should do a custom crop with an offset', function (_done) {
+		this.slow(5000);
+		this.timeout(10000);
+
+		http.get(server + '/im/?image=/images/robot.jpg&sx=100&sy=100&sw=222&sh=111', function (_httpResponse) {
+
+			_httpResponse.headers['content-type'].should.eql('image/jpeg');
+
+			gm(_httpResponse)
+				.options(gmOptions)
+				.size(function (_error, _size) {
+					if(_error) return _done(_error);
+
+					_size.width.should.equal(222);
+					_size.height.should.equal(111);
+
+					_done();
+				});
+
+		});
+
+	});
+
+	describe('with invalid operators', function(){
+		[
+			[0,0,0,0],
+			['a',0,0,0],
+			[-1,0,0,0],
+			['',0,0,0],
+		].forEach(function(params){
+			it('should not do a custom crop with ' + params, function (_done) {
+				this.slow(5000);
+				this.timeout(10000);
+
+				http.get(server + '/im/?image=/images/robot.jpg&sx='+params[0]+'&sy='+params[1]+'&sw='+params[2]+'&sh='+params[3]+'', function (_httpResponse) {
+
+					_httpResponse.headers['content-type'].should.eql('image/jpeg');
+
+					gm(_httpResponse)
+						.options(gmOptions)
+						.size(function (_error, _size) {
+							if(_error) return _done(_error);
+
+							// Default image size
+							_size.width.should.equal(1920);
+							_size.height.should.equal(1080);
+
+							_done();
+						});
+
+				});
+
+			});
+		});
+	});
+
 	it('should crop to a short width big height ratio', function (_done) {
 		this.slow(5000);
 		this.timeout(10000);
