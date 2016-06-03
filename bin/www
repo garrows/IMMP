@@ -1,9 +1,18 @@
 #!/usr/bin/env node
+
 var debug = require('debug')('gm');
-var app = require('../app');
+var app = require('../app')({
+	// ttl: 0,
+	// ttl: 1000 * 60 * 60 * 24 * 7, // 1 week
+	imageMagick: false,
+	graphicsMagick: true,
+	cacheFolder: process.cwd() + '/.tmp/immp',
+	// allowProxy: true,
+	imageDir: process.cwd() + '/public'
+});
 
 app.set('port', process.env.PORT || 3000);
 
-var server = app.listen(app.get('port'), function() {
-  debug('Express server listening on port ' + server.address().port);
+var server = app.listen(app.get('port'), function () {
+	debug('Express server listening on port ' + server.address().port);
 });

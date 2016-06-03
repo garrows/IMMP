@@ -12,20 +12,33 @@ var immpPath = path.join(cwd, '/.tmp/immp'),
 		bufferStream: true,
 		imageMagick: false,
 		graphicsMagick: true
-	};
-
-var server = 'http://localhost:' + (process.env.PORT || 3000);
+	},
+	serverImmpConfig = {
+		// ttl: 0,
+		// ttl: 1000 * 60 * 60 * 24 * 7, // 1 week
+		imageMagick: false,
+		graphicsMagick: true,
+		cacheFolder: process.cwd() + '/.tmp/immp',
+		// allowProxy: true,
+		imageDir: process.cwd() + '/public'
+	},
+	server,
+	serverPort = process.env.PORT || 3000,
+	serverUrl = 'http://localhost:' + serverPort;
 
 describe('immp', function () {
 
 	before(function (_done) {
-		cluster.setupMaster({
-			exec: path.join(cwd, '/bin/www')
-		});
-		cluster.fork();
-		setTimeout(function () {
+		// Set up the test server.
+		var debug = require('debug')('gm');
+		var app = require('../app')(serverImmpConfig);
+
+		app.set('port', serverPort);
+
+		server = app.listen(app.get('port'), function () {
+			debug('Express server listening on port ' + serverPort);
 			_done();
-		}, 300);
+		});
 	});
 
 	after(function () {
@@ -39,8 +52,9 @@ describe('immp', function () {
 		this.slow(5000);
 		this.timeout(10000);
 
-		http.get(server + '/im/?image=/images/robot.jpg&resize=200x0', function (_httpResponse) {
+		http.get(serverUrl + '/im/?image=/images/robot.jpg&resize=200x0', function (_httpResponse) {
 
+			_httpResponse.statusCode.should.eql(200);
 			_httpResponse.headers['content-type'].should.eql('image/jpeg');
 
 			gm(_httpResponse)
@@ -61,8 +75,9 @@ describe('immp', function () {
 		this.slow(5000);
 		this.timeout(10000);
 
-		http.get(server + '/im/?image=/images/robot.jpg&resize=0x200', function (_httpResponse) {
+		http.get(serverUrl + '/im/?image=/images/robot.jpg&resize=0x200', function (_httpResponse) {
 
+			_httpResponse.statusCode.should.eql(200);
 			_httpResponse.headers['content-type'].should.eql('image/jpeg');
 
 			gm(_httpResponse)
@@ -83,8 +98,9 @@ describe('immp', function () {
 		this.slow(5000);
 		this.timeout(10000);
 
-		http.get(server + '/im/?image=/images/robot.jpg&resize=2000x2000', function (_httpResponse) {
+		http.get(serverUrl + '/im/?image=/images/robot.jpg&resize=2000x2000', function (_httpResponse) {
 
+			_httpResponse.statusCode.should.eql(200);
 			_httpResponse.headers['content-type'].should.eql('image/jpeg');
 
 			gm(_httpResponse)
@@ -106,8 +122,9 @@ describe('immp', function () {
 		this.slow(5000);
 		this.timeout(10000);
 
-		http.get(server + '/im/?image=/images/robot.jpg&resize=2000x2000&upscale=true', function (_httpResponse) {
+		http.get(serverUrl + '/im/?image=/images/robot.jpg&resize=2000x2000&upscale=true', function (_httpResponse) {
 
+			_httpResponse.statusCode.should.eql(200);
 			_httpResponse.headers['content-type'].should.eql('image/jpeg');
 
 			gm(_httpResponse)
@@ -129,8 +146,9 @@ describe('immp', function () {
 		this.slow(5000);
 		this.timeout(10000);
 
-		http.get(server + '/im/?image=/images/robot.jpg&resize=100x200', function (_httpResponse) {
+		http.get(serverUrl + '/im/?image=/images/robot.jpg&resize=100x200', function (_httpResponse) {
 
+			_httpResponse.statusCode.should.eql(200);
 			_httpResponse.headers['content-type'].should.eql('image/jpeg');
 
 			gm(_httpResponse)
@@ -154,8 +172,9 @@ describe('immp', function () {
 		this.slow(5000);
 		this.timeout(10000);
 
-		http.get(server + '/im/?image=/images/robot.jpg&crop=1x1', function (_httpResponse) {
+		http.get(serverUrl + '/im/?image=/images/robot.jpg&crop=1x1', function (_httpResponse) {
 
+			_httpResponse.statusCode.should.eql(200);
 			_httpResponse.headers['content-type'].should.eql('image/jpeg');
 
 			gm(_httpResponse)
@@ -177,8 +196,9 @@ describe('immp', function () {
 		this.slow(5000);
 		this.timeout(10000);
 
-		http.get(server + '/im/?image=/images/robot.jpg&sx=0&sy=0&sw=100&sh=111', function (_httpResponse) {
+		http.get(serverUrl + '/im/?image=/images/robot.jpg&sx=0&sy=0&sw=100&sh=111', function (_httpResponse) {
 
+			_httpResponse.statusCode.should.eql(200);
 			_httpResponse.headers['content-type'].should.eql('image/jpeg');
 
 			gm(_httpResponse)
@@ -200,8 +220,9 @@ describe('immp', function () {
 		this.slow(5000);
 		this.timeout(10000);
 
-		http.get(server + '/im/?image=/images/robot.jpg&sx=100&sy=100&sw=222&sh=111', function (_httpResponse) {
+		http.get(serverUrl + '/im/?image=/images/robot.jpg&sx=100&sy=100&sw=222&sh=111', function (_httpResponse) {
 
+			_httpResponse.statusCode.should.eql(200);
 			_httpResponse.headers['content-type'].should.eql('image/jpeg');
 
 			gm(_httpResponse)
@@ -219,20 +240,21 @@ describe('immp', function () {
 
 	});
 
-	describe('with invalid operators', function(){
+	describe('with invalid operators', function () {
 		[
-			[0,0,0,0], // No image
-			[99999,99999,100,100], // Outside bounds
-			['a',0,0,0], // Non-numeric
-			[-1,0,0,0], // Not positive
-			['',0,0,0], // Not defined
-		].forEach(function(params){
+			[0, 0, 0, 0], // No image
+			[99999, 99999, 100, 100], // Outside bounds
+			['a', 0, 0, 0], // Non-numeric
+			[-1, 0, 0, 0], // Not positive
+			['', 0, 0, 0], // Not defined
+		].forEach(function (params) {
 			it('should not do a custom crop with ' + params, function (_done) {
 				this.slow(5000);
 				this.timeout(10000);
 
-				http.get(server + '/im/?image=/images/robot.jpg&sx='+params[0]+'&sy='+params[1]+'&sw='+params[2]+'&sh='+params[3]+'', function (_httpResponse) {
+				http.get(serverUrl + '/im/?image=/images/robot.jpg&sx=' + params[0] + '&sy=' + params[1] + '&sw=' + params[2] + '&sh=' + params[3] + '', function (_httpResponse) {
 
+					_httpResponse.statusCode.should.eql(200);
 					_httpResponse.headers['content-type'].should.eql('image/jpeg');
 
 					gm(_httpResponse)
@@ -257,8 +279,9 @@ describe('immp', function () {
 		this.slow(5000);
 		this.timeout(10000);
 
-		http.get(server + '/im/?image=/images/robot.jpg&crop=9x16', function (_httpResponse) {
+		http.get(serverUrl + '/im/?image=/images/robot.jpg&crop=9x16', function (_httpResponse) {
 
+			_httpResponse.statusCode.should.eql(200);
 			_httpResponse.headers['content-type'].should.eql('image/jpeg');
 
 			gm(_httpResponse)
@@ -281,8 +304,9 @@ describe('immp', function () {
 		this.slow(5000);
 		this.timeout(10000);
 
-		http.get(server + '/im/?image=/images/robot.jpg&crop=16x9', function (_httpResponse) {
+		http.get(serverUrl + '/im/?image=/images/robot.jpg&crop=16x9', function (_httpResponse) {
 
+			_httpResponse.statusCode.should.eql(200);
 			_httpResponse.headers['content-type'].should.eql('image/jpeg');
 
 			gm(_httpResponse)
@@ -304,8 +328,9 @@ describe('immp', function () {
 		this.slow(5000);
 		this.timeout(10000);
 
-		http.get(server + '/im/?image=/images/robot.jpg&crop=1x1&resize=50x100', function (_httpResponse) {
+		http.get(serverUrl + '/im/?image=/images/robot.jpg&crop=1x1&resize=50x100', function (_httpResponse) {
 
+			_httpResponse.statusCode.should.eql(200);
 			_httpResponse.headers['content-type'].should.eql('image/jpeg');
 
 			gm(_httpResponse)
@@ -332,8 +357,9 @@ describe('immp', function () {
 			// Get the size without compression
 			function (_callback) {
 
-				http.get(server + '/im/?image=/images/robot.jpg&quality=invalidQualityValue', function (_httpResponse) {
+				http.get(serverUrl + '/im/?image=/images/robot.jpg&quality=invalidQualityValue', function (_httpResponse) {
 
+					_httpResponse.statusCode.should.eql(200);
 					_httpResponse.headers['content-type'].should.eql('image/jpeg');
 
 					gm(_httpResponse)
@@ -350,8 +376,9 @@ describe('immp', function () {
 			// Get the size with compression
 			function (_fileSizeWithoutCompression, _callback) {
 
-				http.get(server + '/im/?image=/images/robot.jpg&quality=50', function (_httpResponse) {
+				http.get(serverUrl + '/im/?image=/images/robot.jpg&quality=50', function (_httpResponse) {
 
+					_httpResponse.statusCode.should.eql(200);
 					_httpResponse.headers['content-type'].should.eql('image/jpeg');
 
 					gm(_httpResponse)
@@ -378,8 +405,9 @@ describe('immp', function () {
 		this.slow(5000);
 		this.timeout(10000);
 
-		http.get(server + '/im/?image=/images/Landscape_8.jpg&quality=50', function (_httpResponse) {
+		http.get(serverUrl + '/im/?image=/images/Landscape_8.jpg&quality=50', function (_httpResponse) {
 
+			_httpResponse.statusCode.should.eql(200);
 			_httpResponse.headers['content-type'].should.eql('image/jpeg');
 
 			gm(_httpResponse)
@@ -400,8 +428,9 @@ describe('immp', function () {
 		this.slow(5000);
 		this.timeout(10000);
 
-		http.get(server + '/im/?image=' + server + '/images/robot.jpg&crop=1x1&resize=50x100', function (_httpResponse) {
+		http.get(serverUrl + '/im/?image=' + serverUrl + '/images/robot.jpg&crop=1x1&resize=50x100', function (_httpResponse) {
 
+			_httpResponse.statusCode.should.eql(200);
 			_httpResponse.headers['content-type'].should.eql('image/jpeg');
 
 			gm(_httpResponse)
@@ -423,8 +452,9 @@ describe('immp', function () {
 		this.slow(5000);
 		this.timeout(10000);
 
-		http.get(server + '/im/?image=https://www.google.com/images/srpr/logo11w.png&crop=1x1&resize=50x100', function (_httpResponse) {
+		http.get(serverUrl + '/im/?image=https://www.google.com/images/srpr/logo11w.png&crop=1x1&resize=50x100', function (_httpResponse) {
 
+			_httpResponse.statusCode.should.eql(200);
 			_httpResponse.headers['content-type'].should.eql('image/png');
 
 			gm(_httpResponse)
@@ -443,8 +473,9 @@ describe('immp', function () {
 	});
 
 	it('should still have the right content-type & size when cached', function (_done) {
-		http.get(server + '/im/?image=/images/Landscape_8.jpg&quality=50', function (_httpResponse) {
+		http.get(serverUrl + '/im/?image=/images/Landscape_8.jpg&quality=50', function (_httpResponse) {
 
+			_httpResponse.statusCode.should.eql(200);
 			_httpResponse.headers['content-type'].should.eql('image/jpeg');
 
 			gm(_httpResponse)
@@ -459,6 +490,14 @@ describe('immp', function () {
 
 		});
 
+	});
+
+	it('should return gifs', function (_done) {
+		http.get(serverUrl + '/im/?image=/images/captainplanet.gif', function (_httpResponse) {
+			_httpResponse.statusCode.should.eql(200);
+			_httpResponse.headers['content-type'].should.eql('image/gif');
+			_done();
+		});
 	});
 
 });

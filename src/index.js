@@ -15,6 +15,7 @@ module.exports = function (_config) {
 		ttl: 1000 * 60 * 60 * 24 * 7, // 1 week
 		allowProxy: true,
 		imageDir: process.cwd(),
+		convertTo: null,
 
 	}, _config);
 
@@ -153,12 +154,12 @@ module.exports = function (_config) {
 					// Custom crop as per request
 					function (_callback) {
 						// All params should exist and be numeric.
-						var hasCrop = _.every(customCrop, function(param){
+						var hasCrop = _.every(customCrop, function (param) {
 							var num = Number(param);
 							return !isNaN(num) && num >= 0;
 						});
-						if(hasCrop){
-							gmImage.crop( customCrop.w, customCrop.h, customCrop.x, customCrop.y );
+						if(hasCrop) {
+							gmImage.crop(customCrop.w, customCrop.h, customCrop.x, customCrop.y);
 						}
 						_callback(null);
 					},
