@@ -15,7 +15,7 @@ module.exports = function (_config) {
 		ttl: 1000 * 60 * 60 * 24 * 7, // 1 week
 		allowProxy: true,
 		imageDir: process.cwd(),
-		convertTo: null,
+		// convertTo: {},
 
 	}, _config);
 
@@ -130,27 +130,34 @@ module.exports = function (_config) {
 			 */
 			function (_imageSrc, _manipulationDoneCallback) {
 				var gmImage = gm(_imageSrc, image.hash).options(gmOptions);
-
 				async.waterfall([
-
-					//Get original content-type
+					// Get image format/content-type
 					function (_callback) {
 						gmImage.format({
 							bufferStream: true
-						}, function (_error, _format) {
-							if(_error) {
-								console.log(_error);
-								return _callback(_error);
-							}
-							image.format = _format;
-							if(!_res.headersSent) {
-								_res.header('Content-Type', 'image/' + _format.toLowerCase());
-							}
-
-							_callback(null);
-						});
+						}, _callback);
 					},
+					function (_format, _callback) {
+						// Check if we should convert.
+						var newFormat;
+						var mimeType;
+						_format = _format.toLowerCase();
 
+						if(config.convertTo && config.convertTo[_format] && config.convertTo[_format].fileType && config.convertTo[_format].fileType.toLowerCase() !== _format) {
+							newFormat = config.convertTo[_format].fileType.toLowerCase();
+							gmImage.setFormat(newFormat);
+							mimeType = config.convertTo[_format].mimeType;
+							_format = newFormat;
+						}
+						image.format = _format;
+						if(!mimeType) {
+							mimeType = _format.toLowerCase();
+						}
+						if(!_res.headersSent) {
+							_res.header('Content-Type', 'image/' + mimeType);
+						}
+						_callback(null);
+					},
 					// Custom crop as per request
 					function (_callback) {
 						// All params should exist and be numeric.
@@ -164,7 +171,7 @@ module.exports = function (_config) {
 						_callback(null);
 					},
 
-					//Get original size (after initial crop)
+					// Get size (after initial crop)
 					function (_callback) {
 						gmImage.size({
 							bufferStream: true

@@ -500,4 +500,48 @@ describe('immp', function () {
 		});
 	});
 
+	describe('with convertTo set', function () {
+
+		before(function (_done) {
+			// Clear file cache.
+			var immpFiles = fs.readdirSync(immpPath);
+			immpFiles.forEach(function (_file) {
+				fs.unlinkSync(path.join(immpPath, '/', _file));
+			});
+
+			// Recreate server with new config option/s.
+			server.on('close', function () {
+				serverImmpConfig.convertTo = {
+					gif: {
+						fileType: 'png32',
+						mimeType: 'png'
+					}
+				};
+				// Set up the test server.
+				var debug = require('debug')('gm');
+				var app = require('../app')(serverImmpConfig);
+
+				app.set('port', serverPort);
+
+				server = app.listen(app.get('port'), function () {
+					debug('Express server listening on port ' + serverPort);
+					_done();
+				});
+			});
+			server.close();
+		});
+
+		it('should return in the appropriate format', function (_done) {
+			http.get(serverUrl + '/im/?image=/images/captainplanet.gif', function (_httpResponse) {
+				_httpResponse.statusCode.should.eql(200);
+				_httpResponse.headers['content-type'].should.eql('image/png');
+				gm(_httpResponse)
+					.options(gmOptions).format(function (error, format) {
+						format.should.eql('PNG');
+						_done();
+					});
+			});
+		});
+	});
+
 });

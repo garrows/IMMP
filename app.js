@@ -1,9 +1,9 @@
-var express = require('express');
-var path = require('path');
-var favicon = require('static-favicon');
-var logger = require('morgan');
-var cookieParser = require('cookie-parser');
-var bodyParser = require('body-parser');
+var express = require('express'),
+	path = require('path'),
+	favicon = require('static-favicon'),
+	logger = require('morgan'),
+	cookieParser = require('cookie-parser'),
+	bodyParser = require('body-parser');
 
 module.exports = function (config) {
 	var app = express();
@@ -25,7 +25,8 @@ module.exports = function (config) {
                 "/images/test.jpg",
                 "/images/portraitcat.jpg",
                 "/images/monster.png",
-                "/images/wat.jpg"
+                "/images/wat.jpg",
+                "/images/captainplanet.gif",
             ],
 			tests: [
                 "",
@@ -43,11 +44,11 @@ module.exports = function (config) {
 
 	try {
 		require('fs').mkdirSync('.tmp');
-	} catch(e) {};
+	} catch(e) {}
 
 	try {
 		require('fs').mkdirSync('.tmp/immp');
-	} catch(e) {};
+	} catch(e) {}
 
 	app.use('/im/*', require('./src')(config));
 
@@ -83,4 +84,4 @@ module.exports = function (config) {
 	});
 
 	return app;
-}
+};

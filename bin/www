@@ -8,7 +8,13 @@ var app = require('../app')({
 	graphicsMagick: true,
 	cacheFolder: process.cwd() + '/.tmp/immp',
 	// allowProxy: true,
-	imageDir: process.cwd() + '/public'
+	imageDir: process.cwd() + '/public',
+	convertTo: {
+		gif: {
+			fileType: 'png32',
+			mimeType: 'png'
+		}
+	}
 });
 
 app.set('port', process.env.PORT || 3000);
