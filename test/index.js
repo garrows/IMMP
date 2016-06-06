@@ -216,6 +216,30 @@ describe('immp', function () {
 
 	});
 
+	it('should do a custom crop with a ratio crop', function (_done) {
+		this.slow(5000);
+		this.timeout(10000);
+
+		http.get(serverUrl + '/im/?image=/images/robot.jpg&sx=0&sy=0&sw=100&sh=111&crop=1x1', function (_httpResponse) {
+
+			_httpResponse.statusCode.should.eql(200);
+			_httpResponse.headers['content-type'].should.eql('image/jpeg');
+
+			gm(_httpResponse)
+				.options(gmOptions)
+				.size(function (_error, _size) {
+					if(_error) return _done(_error);
+
+					_size.width.should.equal(100);
+					_size.height.should.equal(100);
+
+					_done();
+				});
+
+		});
+
+	});
+
 	it('should do a custom crop with an offset', function (_done) {
 		this.slow(5000);
 		this.timeout(10000);

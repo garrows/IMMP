@@ -158,20 +158,8 @@ module.exports = function (_config) {
 						}
 						_callback(null);
 					},
-					// Custom crop as per request
-					function (_callback) {
-						// All params should exist and be numeric.
-						var hasCrop = _.every(customCrop, function (param) {
-							var num = Number(param);
-							return !isNaN(num) && num >= 0;
-						});
-						if(hasCrop) {
-							gmImage.crop(customCrop.w, customCrop.h, customCrop.x, customCrop.y);
-						}
-						_callback(null);
-					},
 
-					// Get size (after initial crop)
+					// Get size
 					function (_callback) {
 						gmImage.size({
 							bufferStream: true
@@ -183,6 +171,24 @@ module.exports = function (_config) {
 
 							_callback(null);
 						});
+					},
+
+					// Custom crop as per request
+					function (_callback) {
+						// All params should exist and be numeric.
+						var hasCrop = _.every(customCrop, function (param) {
+							var num = Number(param);
+							return !isNaN(num) && num >= 0;
+						});
+						if(hasCrop) {
+							gmImage.crop(customCrop.w, customCrop.h, customCrop.x, customCrop.y);
+
+							// GM doesn't update this, so we must do it manually.
+							image.size.width = customCrop.w;
+							image.size.height = customCrop.h;
+
+						}
+						_callback(null);
 					},
 
 					// Aspect ratio
