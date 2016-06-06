@@ -20,14 +20,14 @@ module.exports = function (_config) {
 	}, _config);
 
 	return function (_req, _res, _next) {
-		var dimensions = _req.query.resize || '0x0',
-			crop = _req.query.crop || '0x0',
-			quality = _req.query.quality,
+		var dimensions = String(_req.query.resize) || '0x0',
+			crop = String(_req.query.crop) || '0x0',
+			quality = cast(_req.query.quality, 'number'),
 			customCrop = {
-				x: _req.query.sx,
-				y: _req.query.sy,
-				w: _req.query.sw,
-				h: _req.query.sh,
+				x: String(_req.query.sx),
+				y: String(_req.query.sy),
+				w: String(_req.query.sw),
+				h: String(_req.query.sh),
 			};
 
 		var gmOptions = {};
@@ -40,7 +40,7 @@ module.exports = function (_config) {
 
 		var image = {
 			query: JSON.stringify(_req.query),
-			location: _req.query.image,
+			location: String(_req.query.image),
 			resize: {
 				width: cast(_.first(dimensions.match(/^[^x]+/)), 'number') || null,
 				height: cast(_.first(dimensions.match(/[^x]+$/)), 'number') || null
@@ -53,7 +53,7 @@ module.exports = function (_config) {
 				width: 0,
 				height: 0
 			},
-			quality: cast(quality, 'number'),
+			quality: quality,
 			upscale: /true/i.test(_req.query.upscale)
 		};
 
@@ -158,20 +158,8 @@ module.exports = function (_config) {
 						}
 						_callback(null);
 					},
-					// Custom crop as per request
-					function (_callback) {
-						// All params should exist and be numeric.
-						var hasCrop = _.every(customCrop, function (param) {
-							var num = Number(param);
-							return !isNaN(num) && num >= 0;
-						});
-						if(hasCrop) {
-							gmImage.crop(customCrop.w, customCrop.h, customCrop.x, customCrop.y);
-						}
-						_callback(null);
-					},
 
-					// Get size (after initial crop)
+					// Get size
 					function (_callback) {
 						gmImage.size({
 							bufferStream: true
@@ -183,6 +171,24 @@ module.exports = function (_config) {
 
 							_callback(null);
 						});
+					},
+
+					// Custom crop as per request
+					function (_callback) {
+						// All params should exist and be numeric.
+						var hasCrop = _.every(customCrop, function (param) {
+							var num = Number(param);
+							return !isNaN(num) && num >= 0;
+						});
+						if(hasCrop) {
+							gmImage.crop(customCrop.w, customCrop.h, customCrop.x, customCrop.y);
+
+							// GM doesn't update this, so we must do it manually.
+							image.size.width = customCrop.w;
+							image.size.height = customCrop.h;
+
+						}
+						_callback(null);
 					},
 
 					// Aspect ratio

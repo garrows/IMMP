@@ -71,6 +71,29 @@ describe('immp', function () {
 
 	});
 
+	it('should not crash on multple params', function (_done) {
+		this.slow(5000);
+		this.timeout(10000);
+
+		http.get(serverUrl + '/im/?image=/images/robot.jpg&resize=200x200&resize=200x200&sx=0&sx=0&sy=0&sy=0&sw=100&sw=100&sh=100&sh=100&crop=1x1&crop=1x1', function (_httpResponse) {
+
+			_httpResponse.statusCode.should.eql(200);
+			_httpResponse.headers['content-type'].should.eql('image/jpeg');
+
+			gm(_httpResponse)
+				.options(gmOptions)
+				.size(function (_error, _size) {
+					if(_error) return _done(_error);
+
+					_size.width.should.equal(200);
+
+					_done();
+				});
+
+		});
+
+	});
+
 	it('should resize by height', function (_done) {
 		this.slow(5000);
 		this.timeout(10000);
@@ -208,6 +231,30 @@ describe('immp', function () {
 
 					_size.width.should.equal(100);
 					_size.height.should.equal(111);
+
+					_done();
+				});
+
+		});
+
+	});
+
+	it('should do a custom crop with a ratio crop', function (_done) {
+		this.slow(5000);
+		this.timeout(10000);
+
+		http.get(serverUrl + '/im/?image=/images/robot.jpg&sx=0&sy=0&sw=100&sh=111&crop=1x1', function (_httpResponse) {
+
+			_httpResponse.statusCode.should.eql(200);
+			_httpResponse.headers['content-type'].should.eql('image/jpeg');
+
+			gm(_httpResponse)
+				.options(gmOptions)
+				.size(function (_error, _size) {
+					if(_error) return _done(_error);
+
+					_size.width.should.equal(100);
+					_size.height.should.equal(100);
 
 					_done();
 				});
