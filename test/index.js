@@ -215,11 +215,11 @@ describe('immp', function () {
 
 	});
 
-	it('should do a custom crop', function (_done) {
+	it('should do a custom crop and round exponents', function (_done) {
 		this.slow(5000);
 		this.timeout(10000);
 
-		http.get(serverUrl + '/im/?image=/images/robot.jpg&sx=0&sy=0&sw=100&sh=111', function (_httpResponse) {
+		http.get(serverUrl + '/im/?image=/images/robot.jpg&sx=0.4&sy=5.798028723802416e-15&sw=100.4&sh=111.4', function (_httpResponse) {
 
 			_httpResponse.statusCode.should.eql(200);
 			_httpResponse.headers['content-type'].should.eql('image/jpeg');
@@ -434,7 +434,7 @@ describe('immp', function () {
 							if(_error) return _callback(_error);
 							var filesize = parseInt(_filesize);
 							filesize.should.be.lessThan(_fileSizeWithoutCompression);
-							(filesize / _fileSizeWithoutCompression).should.be.greaterThan(.5).and.lessThan(.8);
+							(filesize / _fileSizeWithoutCompression).should.be.greaterThan(0.5).and.lessThan(0.8);
 							_callback(null, filesize);
 						});
 

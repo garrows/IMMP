@@ -181,6 +181,10 @@ module.exports = function (_config) {
 							return !isNaN(num) && num >= 0;
 						});
 						if(hasCrop) {
+							customCrop.x = parseInt(customCrop.x);
+							customCrop.y = parseInt(customCrop.y);
+							customCrop.w = parseInt(customCrop.w);
+							customCrop.h = parseInt(customCrop.h);
 							gmImage.crop(customCrop.w, customCrop.h, customCrop.x, customCrop.y);
 
 							// GM doesn't update this, so we must do it manually.

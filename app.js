@@ -36,6 +36,7 @@ module.exports = function (config) {
                 "crop=1x1",
                 "quality=50",
                 "sx=100&sy=100&sw=100&sh=200",
+                "sx=100&sy=5.798028723802416e-15&sw=100&sh=200",
                 "sx=100&sy=100&sw=100&sh=200&crop=1x1",
                 "sx=0&sy=0&sw=200&sh=200",
             ]
