@@ -6,7 +6,8 @@ var _ = require('underscore'),
 	os = require('os'),
 	gm = require('gm'),
 	https = require('https'),
-	http = require('http');
+	http = require('http'),
+	path = require('path');
 
 module.exports = function (_config) {
 	var config = _.extend({
@@ -59,6 +60,7 @@ module.exports = function (_config) {
 
 		if(config.allowProxy && !/^https?\:/.test(image.location)) {
 			image.location = image.location.trim().replace(/^\//, '');
+			image.path = image.location;
 			image.location = _req.protocol + '://' + _req.headers.host + '/' + image.location;
 		}
 
@@ -75,6 +77,7 @@ module.exports = function (_config) {
 					now = new Date().getTime();
 
 				try {
+					// TODO: remove this sync? sounds like a good idea
 					stat = fs.statSync(config.cacheFolder + '/' + image.hash);
 					createdAt = cast(stat.mtime, 'date').getTime();
 				} catch(e) {}
@@ -108,21 +111,49 @@ module.exports = function (_config) {
 			 * Get the image
 			 */
 			function (_callback) {
-				if(config.allowProxy) {
-					var client = http;
-					if(image.location.indexOf('https://') === 0) {
-						client = https;
-					}
-					client.get(image.location, function (_httpResponse) {
-						if(_httpResponse.statusCode >= 400) return _callback(new Error('status ' + _httpResponse.statusCode));
-						_callback(null, _httpResponse);
-					}).on('error', function (_error) {
-						_callback(_error);
-					});
-				} else {
+				if(!config.allowProxy) {
 					var imageStream = fs.createReadStream(config.imageDir + image.location);
-					_callback(null, imageStream);
+					return _callback(null, imageStream);
 				}
+				var client = image.location.indexOf('https://') === 0 ? https : http;
+				var sourceImageHash = image.hash = crypto.createHash('sha1').update(image.path).digest('hex');
+				var sourceImageCacheFilename = path.join(config.cacheFolder, 'source-' + sourceImageHash);
+
+				async.waterfall([
+					function (wDone) {
+						var sourceImageStream = fs.createReadStream(sourceImageCacheFilename);
+						sourceImageStream.on('open', function () {
+							return wDone(null, sourceImageStream);
+						});
+						sourceImageStream.on('error', function (error) {
+							// If the cached image is not found, it's fine to ignore the error.
+							// Subsequently, if the error is not to do with a missing cache image, we don't
+							// want to stop serving images, so log an error and continue.
+							if(error.code !== 'ENOENT') {
+								console.error('Error retrieving source image cache', error, error.stack);
+							}
+							return wDone(null, null);
+						});
+					},
+					function (sourceImageStream, wDone) {
+
+						if(sourceImageStream) return wDone(null, sourceImageStream);
+
+						client.get(image.location, function (_httpResponse) {
+
+							if(_httpResponse.statusCode >= 400) return wDone(new Error('status ' + _httpResponse.statusCode));
+
+							var writeImageStream = fs.createWriteStream(sourceImageCacheFilename)
+							.on('error', wDone)
+							.on('close', function () {
+								return wDone(null, fs.createReadStream(sourceImageCacheFilename));
+							});
+
+							_httpResponse.pipe(writeImageStream);
+						}).on('error', wDone);
+					},
+				], _callback);
+
 			},
 
 			/**
@@ -135,7 +166,9 @@ module.exports = function (_config) {
 					function (_callback) {
 						gmImage.format({
 							bufferStream: true
-						}, _callback);
+						}, function (error, format) {
+							return _callback(error, format);
+						});
 					},
 					function (_format, _callback) {
 						// Check if we should convert.

@@ -547,6 +547,43 @@ describe('immp', function () {
 		});
 	});
 
+	describe('proxy file caching', function () {
+		var robotImage;
+
+		before(function (_done) {
+			// Clear file cache.
+			var immpFiles = fs.readdirSync(immpPath);
+			immpFiles.forEach(function (_file) {
+				fs.unlinkSync(path.join(immpPath, '/', _file));
+			});
+			_done();
+		});
+
+		it('should work with no cached image', function (_done) {
+			http.get(serverUrl + '/im/?image=/images/robot.jpg', function (_httpResponse) {
+				_httpResponse.statusCode.should.eql(200);
+				_httpResponse.headers['content-type'].should.eql('image/jpeg');
+				_done();
+			});
+		});
+
+		it('should have created a cached image', function (_done) {
+			var crypto = require('crypto');
+			var cachedFileName = path.join(immpPath, 'source-' + crypto.createHash('sha1').update('images/robot.jpg').digest('hex'));
+			fs.readFile(cachedFileName, function (error, data) {
+				_done(error);
+			});
+		});
+
+		it('should work with a cached image', function (_done) {
+			http.get(serverUrl + '/im/?image=/images/robot.jpg', function (_httpResponse) {
+				_httpResponse.statusCode.should.eql(200);
+				_httpResponse.headers['content-type'].should.eql('image/jpeg');
+				_done();
+			});
+		});
+	});
+
 	describe('with convertTo set', function () {
 
 		before(function (_done) {
@@ -590,5 +627,4 @@ describe('immp', function () {
 			});
 		});
 	});
-
 });
