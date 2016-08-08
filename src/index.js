@@ -60,7 +60,6 @@ module.exports = function (_config) {
 
 		if(config.allowProxy && !/^https?\:/.test(image.location)) {
 			image.location = image.location.trim().replace(/^\//, '');
-			image.path = image.location;
 			image.location = _req.protocol + '://' + _req.headers.host + '/' + image.location;
 		}
 
@@ -116,7 +115,7 @@ module.exports = function (_config) {
 					return _callback(null, imageStream);
 				}
 				var client = image.location.indexOf('https://') === 0 ? https : http;
-				var sourceImageHash = image.hash = crypto.createHash('sha1').update(image.path).digest('hex');
+				var sourceImageHash = image.hash = crypto.createHash('sha1').update(image.location).digest('hex');
 				var sourceImageCacheFilename = path.join(config.cacheFolder, 'source-' + sourceImageHash);
 
 				async.waterfall([
@@ -166,9 +165,7 @@ module.exports = function (_config) {
 					function (_callback) {
 						gmImage.format({
 							bufferStream: true
-						}, function (error, format) {
-							return _callback(error, format);
-						});
+						}, _callback);
 					},
 					function (_format, _callback) {
 						// Check if we should convert.
