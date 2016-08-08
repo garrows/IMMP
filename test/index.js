@@ -1,5 +1,6 @@
 var async = require('async'),
 	cluster = require('cluster'),
+	crypto = require('crypto'),
 	cwd = process.cwd(),
 	fs = require('fs'),
 	gm = require('gm'),
@@ -568,8 +569,7 @@ describe('immp', function () {
 		});
 
 		it('should have created a cached image', function (_done) {
-			var crypto = require('crypto');
-			var cachedFileName = path.join(immpPath, 'source-' + crypto.createHash('sha1').update('images/robot.jpg').digest('hex'));
+			var cachedFileName = path.join(immpPath, 'source-' + crypto.createHash('sha1').update(serverUrl + '/images/robot.jpg').digest('hex'));
 			fs.readFile(cachedFileName, function (error, data) {
 				_done(error);
 			});
@@ -582,6 +582,33 @@ describe('immp', function () {
 				_done();
 			});
 		});
+
+		it('should work with http proxied image', function (_done) {
+			http.get(serverUrl + '/im/?image=https://www.google.com/images/srpr/logo11w.png&crop=1x1&resize=50x100', function (_httpResponse) {
+
+				_httpResponse.statusCode.should.eql(200);
+				_httpResponse.headers['content-type'].should.eql('image/png');
+
+				gm(_httpResponse)
+					.options(gmOptions)
+					.size(function (_error, _size) {
+						if(_error) return _done(_error);
+
+						_size.width.should.equal(50);
+						_size.height.should.equal(50);
+
+						_done();
+					});
+			});
+		});
+
+		it('should have cached a proxied image', function (_done) {
+			var cachedFileName = path.join(immpPath, 'source-' + crypto.createHash('sha1').update('https://www.google.com/images/srpr/logo11w.png').digest('hex'));
+			fs.readFile(cachedFileName, function (error, data) {
+				_done(error);
+			});
+		});
+
 	});
 
 	describe('with convertTo set', function () {
