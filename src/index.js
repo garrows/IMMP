@@ -90,7 +90,8 @@ module.exports = function (_config) {
 						}, function (_error, _format) {
 							if(_error) {
 								console.log(_error);
-								return _callback(_error);
+								// Don't error, continue to re-fetch the image.
+								return _callback();
 							}
 							image.format = _format;
 							if(!_res.headersSent) {
